@@ -22,7 +22,6 @@ ORDER_PREFERENCE = ['Tank', 'Pump', 'Column', 'Reactor', 'Reboiler', 'Condenser'
 SVG_HEADER = '''<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}">
 <style>
 .text {{ font-family: Arial, sans-serif; font-size: 12px; }}
-.comp {{ fill: #fff; stroke: #222; stroke-width: 2 }}
 .conn {{ stroke: #222; stroke-width: 2; fill: none; marker-end: url(#arrow) }}
 </style>
 <defs>
@@ -33,6 +32,9 @@ SVG_HEADER = '''<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}"
 '''
 
 SVG_FOOTER = '</svg>\n'
+
+# 📂 Folder where you saved your SVG symbols
+SYMBOLS_DIR = "symbols"
 
 def extract_components(text):
     text_low = text.lower()
@@ -74,28 +76,33 @@ def layout_components(comps, width=1000, height=400):
         positions.append({'type': comp, 'x': x, 'y': y})
     return positions
 
+def load_symbol(symbol_name):
+    """Load the raw SVG code for a given component from symbols folder."""
+    filename = os.path.join(SYMBOLS_DIR, f"{symbol_name.lower()}.svg")
+    if not os.path.exists(filename):
+        return None
+    with open(filename, "r") as f:
+        svg_data = f.read()
+    # Strip out <svg> wrapper so we can embed
+    inner = re.sub(r'<\?xml.*?\?>', '', svg_data, flags=re.DOTALL)
+    inner = re.sub(r'<svg[^>]*>', '', inner, count=1, flags=re.DOTALL)
+    inner = re.sub(r'</svg>', '', inner, count=1)
+    return inner
+
 def draw_component(svg_parts, comp):
     x = comp['x']; y = comp['y']; t = comp['type']
-    w = 120; h = 70
-    rx = 8
-    left = x - w/2; top = y - h/2
-    if t == 'Column':
-        h2 = 140
-        top = y - h2/2
-        svg_parts.append(f'<rect class="comp" x="{x-40}" y="{top}" width="80" height="{h2}" rx="12" />')
-        svg_parts.append(f'<text class="text" x="{x}" y="{top + h2 + 16}" text-anchor="middle">{t}</text>')
-    elif t in ('Reactor', 'Tank', 'Separator'):
-        svg_parts.append(f'<ellipse class="comp" cx="{x}" cy="{y}" rx="48" ry="36" />')
-        svg_parts.append(f'<text class="text" x="{x}" y="{y + 52}" text-anchor="middle">{t}</text>')
-    elif t in ('Pump',):
-        points = f"{x},{y-28} {x+28},{y} {x},{y+28} {x-28},{y}"
-        svg_parts.append(f'<polygon class="comp" points="{points}" />')
-        svg_parts.append(f'<text class="text" x="{x}" y="{y + 42}" text-anchor="middle">{t}</text>')
-    elif t in ('Reboiler','Condenser'):
-        svg_parts.append(f'<rect class="comp" x="{left}" y="{top}" width="{w}" height="{h}" rx="{rx}" />')
-        svg_parts.append(f'<text class="text" x="{x}" y="{y + h/2 + 8}" text-anchor="middle">{t}</text>')
+    symbol_svg = load_symbol(t)
+    if symbol_svg:
+        # place symbol centered at (x,y) using <g> transform
+        svg_parts.append(f'<g transform="translate({x-40},{y-40}) scale(0.6)">')
+        svg_parts.append(symbol_svg)
+        svg_parts.append('</g>')
+        svg_parts.append(f'<text class="text" x="{x}" y="{y + 60}" text-anchor="middle">{t}</text>')
     else:
-        svg_parts.append(f'<rect class="comp" x="{left}" y="{top}" width="{w}" height="{h}" rx="{rx}" />')
+        # fallback rectangle if symbol file not found
+        w = 120; h = 70; rx = 8
+        left = x - w/2; top = y - h/2
+        svg_parts.append(f'<rect x="{left}" y="{top}" width="{w}" height="{h}" rx="{rx}" fill="#fff" stroke="#222" stroke-width="2"/>')
         svg_parts.append(f'<text class="text" x="{x}" y="{y + h/2 + 8}" text-anchor="middle">{t}</text>')
 
 def connect(svg_parts, compA, compB):
