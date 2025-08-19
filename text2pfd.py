@@ -12,15 +12,15 @@ COMPONENT_KEYWORDS = {
     'pfr': 'Reactor',
     'reboiler': 'Reboiler',
     'condenser': 'Condenser',
-    'cooler': 'Condenser',
-    'heat exchanger': 'Condenser',
+    'cooler': 'Cooler',
+    'heat exchanger': 'Heat Exchanger',
     'tank': 'Tank',
     'feed tank': 'Tank',
     'separator': 'Separator',
 }
 
 # ✅ Draw order
-ORDER_PREFERENCE = ['Tank', 'Pump', 'Column', 'Reactor', 'Reboiler', 'Condenser', 'Separator']
+ORDER_PREFERENCE = ['Tank', 'Pump', 'Column', 'Reactor', 'Reboiler', 'Condenser', 'Cooler', 'Heat Exchanger', 'Separator']
 
 # ✅ SVG header/footer
 SVG_HEADER = '''<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}">
@@ -84,15 +84,17 @@ def layout_components(comps, width=1000, height=400):
 
 # 🖼️ Step 3: Load symbol SVG from file
 def load_symbol(symbol_name):
-    filename = os.path.join(SYMBOLS_DIR, f"{symbol_name.lower()}.svg")
+    # filenames must match lower case and underscores
+    filename = os.path.join(SYMBOLS_DIR, f"{symbol_name.lower().replace(' ', '_')}.svg")
     if not os.path.exists(filename):
         return None
     with open(filename, "r") as f:
         svg_data = f.read()
+    # strip outer <svg> tags
     inner = re.sub(r'<\?xml.*?\?>', '', svg_data, flags=re.DOTALL)
     inner = re.sub(r'<svg[^>]*>', '', inner, count=1, flags=re.DOTALL)
     inner = re.sub(r'</svg>', '', inner, count=1)
-    return inner
+    return inner.strip()
 
 # 🧱 Step 4: Draw components
 def draw_component(svg_parts, comp):
@@ -104,6 +106,7 @@ def draw_component(svg_parts, comp):
         svg_parts.append('</g>')
         svg_parts.append(f'<text class="text" x="{x}" y="{y + 60}" text-anchor="middle">{t}</text>')
     else:
+        # fallback: draw rectangle if svg missing
         w = 120; h = 70; rx = 8
         left = x - w/2; top = y - h/2
         svg_parts.append(f'<rect x="{left}" y="{top}" width="{w}" height="{h}" rx="{rx}" fill="#fff" stroke="#222" stroke-width="2"/>')
