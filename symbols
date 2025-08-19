@@ -1,12 +1,11 @@
 your-app/
- ├── symbols/
+ ├── symbols/                # SVG files go here
  │    ├── pump.svg
  │    ├── cooler.svg
  │    ├── column.svg
  │    ├── valve.svg
  │    ├── heat_exchanger.svg
  │    └── reactor.svg
- ├── src/
- │    └── App.js   (or your main code)
- └── package.json
-
+ ├── app.py                  # Main Streamlit app
+ ├── text2pfd.py             # Logic to convert text → SVG
+ └── requirements.txt        # Python dependencies
