@@ -46,6 +46,11 @@ def text_to_svg(process_text):
         svg_content = load_svg(step)
         svg_elements.append(f"<g transform='translate({x},{y})'>{svg_content}</g>")
 
+        # Add step name below symbol
+        svg_elements.append(
+            f"<text x='{x+40}' y='{y+120}' font-size='14' text-anchor='middle' fill='black'>{step.title()}</text>"
+        )
+
         # Draw arrow to next step
         x += 180
         svg_elements.append(
@@ -73,9 +78,4 @@ def text_to_svg(process_text):
 # -------------------------
 st.title("Text to PFD Generator")
 
-process_text = st.text_area("Enter process steps (e.g. Pump -> Heat Exchanger -> Reactor -> Column):")
-
-if st.button("Generate PFD"):
-    if process_text.strip():
-        svg_code = text_to_svg(process_text)
-        st.write(svg_code, un_
+process_text = st.text_area("Enter process steps (e.g. Pump -> Heat Exchanger -
