@@ -1,7 +1,7 @@
 import streamlit as st
 from text2pfd import text_to_svg
 # Mapping keywords in text to symbol file names
-SYMBOL_MAP = {
+symbols = {
     "pump": "pump.svg",
     "column": "column.svg",
     "distillation": "column.svg",
