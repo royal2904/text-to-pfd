@@ -1,0 +1,12 @@
+your-app/
+ ├── symbols/
+ │    ├── pump.svg
+ │    ├── cooler.svg
+ │    ├── column.svg
+ │    ├── valve.svg
+ │    ├── heat_exchanger.svg
+ │    └── reactor.svg
+ ├── src/
+ │    └── App.js   (or your main code)
+ └── package.json
+
